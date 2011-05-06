@@ -1,46 +1,4 @@
-require 'sinatra'
 require 'tdb'
-require 'json'
-
-set :public, File.dirname(__FILE__) + '/public'
-
-get '/stat.js' do
-  ppp = Potato::PPP.new
-
-  status = {}
-  ifaces = {}
-  ppp.interfaces.each do |iface|
-    ifaces[iface.name]   = iface.status
-    status[:ip_local ] ||= iface.ip_local
-    status[:ip_remote] ||= iface.ip_remote
-  end
-
-  {
-    :status => status,
-    :ifaces => ifaces
-  }.to_json
-end
-
-INTERFACE = /^mlppp[0-2]$/
-COMMANDS = {
-  'down' => '/sbin/ifdown',
-  'up'   => '/sbin/ifup'
-}
-
-get '/set/:iface/:mode' do
-  iface = params[:iface]
-  return "Invalid interface: #{iface}" unless iface =~ INTERFACE
-
-  mode = params[:mode]
-  return "Invalid mode: #{mode}" unless command = COMMANDS[mode]
-
-  fork do
-    exec('/usr/bin/sudo', command, iface)
-    raise 'exec failed'
-  end
-
-  'SUCCESS'
-end
 
 module Potato
   class PPP
