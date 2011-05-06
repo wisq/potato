@@ -1,0 +1,57 @@
+body {
+	font-family: helvetica;
+}
+
+.iface {
+	display: inline-block;
+	margin: 20px;
+	border: 1px solid #ddd;
+	cursor: pointer;
+}
+
+.hidden {
+	display: none;
+}
+
+.template {
+	display: none;
+}
+
+.iface_block {
+	width: auto;
+	margin: auto;
+}
+
+.i_image {
+	width: 100px;
+	height: 70px;
+	background-position: center bottom;
+}
+
+.mode_up {
+	background-image: url(images/up.gif);
+	background-repeat: no-repeat;
+}
+
+.mode_busy {
+	background-image: url(images/busy.gif);
+	background-repeat: no-repeat;
+}
+
+.mode_down {
+	background-image: url(images/down.png);
+	background-repeat: no-repeat;
+}
+
+.warning {
+	color: red;
+	font-variant: small-caps;
+}
+
+.status .ip {
+	margin: 0px 5px;
+}
+
+.status .arrow { 
+	font-size: large;
+}
