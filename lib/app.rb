@@ -4,6 +4,12 @@ require 'active_support/base64'
 
 require 'lib/potato'
 
+INTERFACE = /^mlppp[0-2]$/
+COMMANDS = {
+  'up'   => ['/sbin/ifup'],
+  'down' => ['/sbin/ifdown', '--force']
+}
+
 set :public, File.dirname(__FILE__) + '/../public'
 
 get '/stat.js' do
@@ -26,12 +32,6 @@ get '/stat.js' do
     :log => log
   }.to_json
 end
-
-INTERFACE = /^mlppp[0-2]$/
-COMMANDS = {
-  'down' => '/sbin/ifdown',
-  'up'   => '/sbin/ifup'
-}
 
 get '/admin/check/:mode' do
   return "Not logged in" unless user = http_user
@@ -60,7 +60,7 @@ get '/admin/set/:iface/:mode' do
   end
 
   fork do
-    exec('/usr/bin/sudo', command, iface)
+    exec('/usr/bin/sudo', *(command + [iface]))
     raise 'exec failed'
   end
 
