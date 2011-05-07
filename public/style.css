@@ -9,10 +9,6 @@ body {
 	cursor: pointer;
 }
 
-.hidden {
-	display: none;
-}
-
 .template {
 	display: none;
 }
@@ -29,17 +25,17 @@ body {
 }
 
 .mode_up {
-	background-image: url(images/up.gif);
+	background-image: url(images/mode/up.gif);
 	background-repeat: no-repeat;
 }
 
 .mode_busy {
-	background-image: url(images/busy.gif);
+	background-image: url(images/mode/busy.gif);
 	background-repeat: no-repeat;
 }
 
 .mode_down {
-	background-image: url(images/down.png);
+	background-image: url(images/mode/down.png);
 	background-repeat: no-repeat;
 }
 
@@ -52,6 +48,52 @@ body {
 	margin: 0px 5px;
 }
 
-.status .arrow { 
+.status .arrow {
 	font-size: large;
+}
+
+#log_block {
+	position: absolute;
+	right: 10px;
+}
+
+#log_block .log {
+	background: rgba(0, 0, 0, 0.3);
+	border-radius: 10px;
+	padding: 5px 9px;
+	display: table;
+	margin: 10px auto;
+	height: 30px;
+}
+#log_block .log.template {
+	display: none;
+}
+
+#log_block .log span {
+	vertical-align: middle;
+}
+
+#log_block .log .l_action {
+	display: inline-block;
+	height: 30px;
+	background-position: center;
+	background-repeat: no-repeat;
+	margin: 0px 8px;
+}
+
+#log_block .log .action_up {
+	background-image: url(images/action/up.png);
+	width: 17px;
+}
+#log_block .log .action_down {
+	background-image: url(images/action/down.png);
+	width: 17px;
+}
+#log_block .log .action_in {
+	background-image: url(images/action/in.gif);
+	width: 34px;
+}
+#log_block .log .action_out {
+	background-image: url(images/action/out.png);
+	width: 34px;
 }

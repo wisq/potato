@@ -1,6 +1,95 @@
-require 'tdb'
+require 'json'
+require 'active_support/core_ext/hash/indifferent_access'
 
 module Potato
+  class Log
+    class Entry
+      attr_reader :time
+      attr_accessor :user, :action, :iface
+
+      def self.unpack(line)
+        params = JSON.parse(line).with_indifferent_access
+        params[:time] = Time.at(params[:time].to_f)
+        new(params)
+      end
+
+      def initialize(params)
+        @time   = params[:time]
+        @user   = params[:user]
+        @action = params[:action]
+        @iface  = params[:iface]
+      end
+
+      def pack
+        to_hash.to_json
+      end
+
+      def to_hash
+        @time ||= Time.now
+        {
+          :time => @time.to_f,
+          :user => @user,
+          :action => @action,
+          :iface => @iface
+        }
+      end
+    end
+
+    def self.open
+      log = self.new
+      begin
+        yield log
+      ensure
+        log.close
+      end
+    end
+
+    def initialize
+      @fh = File.open('/var/log/potato/actions.log', 'a+')
+    end
+
+    def <<(params)
+      line = Entry.new(params).pack
+      lock(File::LOCK_EX) do
+        @fh.syswrite(line + "\n")
+      end
+    end
+
+    def last(num)
+      lines = []
+      lock(File::LOCK_SH) do
+        back = 50 * (num + 1)
+        size = @fh.stat.size
+        back = size if size < back
+
+        @fh.seek(0 - size, IO::SEEK_END)
+        @fh.gets # throw away
+
+        while line = @fh.gets
+          break unless line =~ /\n$/ # partial line at end
+          lines << line
+        end
+      end
+
+      lines.last(num).map { |l| Entry.unpack(l) }
+    end
+
+    def close
+      @fh.close
+    end
+
+    private
+
+    def lock(mode)
+      @fh.flock(mode)
+      begin
+        yield
+      ensure
+        @fh.flock(File::LOCK_UN)
+      end
+    end
+  end
+
   class PPP
     class Interface
       def initialize(data)

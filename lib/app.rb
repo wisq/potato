@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require 'active_support/base64'
 
 require 'lib/potato'
 
@@ -16,9 +17,13 @@ get '/stat.js' do
     status[:ip_remote] ||= iface.ip_remote
   end
 
+  cutoff = Time.now - 600
+  log = Potato::Log.new.last(10).select { |l| l.time >= cutoff }.map { |e| e.to_hash }
+
   {
     :status => status,
-    :ifaces => ifaces
+    :ifaces => ifaces,
+    :log => log
   }.to_json
 end
 
@@ -28,12 +33,31 @@ COMMANDS = {
   'up'   => '/sbin/ifup'
 }
 
-get '/set/:iface/:mode' do
+get '/admin/check/:mode' do
+  return "Not logged in" unless user = http_user
+
+  mode = params[:mode]
+  return "Invalid mode: #{mode}" unless ['in', 'out'].include?(mode)
+
+  Potato::Log.open do |log|
+    log << {:user => user, :action => mode}
+  end
+
+  'SUCCESS'
+end
+
+get '/admin/set/:iface/:mode' do
+  return "Not logged in" unless user = http_user
+
   iface = params[:iface]
   return "Invalid interface: #{iface}" unless iface =~ INTERFACE
 
   mode = params[:mode]
   return "Invalid mode: #{mode}" unless command = COMMANDS[mode]
+
+  Potato::Log.open do |log|
+    log << {:user => user, :action => mode, :iface => iface}
+  end
 
   fork do
     exec('/usr/bin/sudo', command, iface)
@@ -41,6 +65,16 @@ get '/set/:iface/:mode' do
   end
 
   'SUCCESS'
+end
+
+def http_user
+  auth = request.env['HTTP_AUTHORIZATION']
+  return if auth.nil?
+
+  auth = auth.split(' ', 2).last
+  user, pass = ActiveSupport::Base64.decode64(auth).split(':', 2)
+  raise "Invalid username: #{user}.inspect" unless user =~ /^[A-Za-z0-9]+$/
+  user
 end
 
 module Potato

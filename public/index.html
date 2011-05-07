@@ -7,8 +7,17 @@
   </head>
   <body style="text-align: center; margin-top: 5%">
 
+    <div id="log_block">
+      <div class="log template" id="log_template">
+	<span class="l_user">user</span>
+	<span class="l_action">&nbsp;</span>
+	<span class="l_iface">iface</span>
+      </div>
+    </div>
+
     <h1>This is not a tomato.</h1>
-    <img src="images/potato.jpg" alt=""/>
+    <img id="checked-out" class="checkin" src="images/potato.jpg"     alt=""/>
+    <img id="checked-in"  class="checkin" src="images/checked_in.gif" alt="" style="display: none"/>
 
     <div class="status">
       <span class="ip" id="ip-local">unknown</span>
@@ -25,7 +34,7 @@
     </div>
 
     <div id="insanity-off" class="warning">Do not turn on all three links at once!</div>
-    <div id="insanity-on"  class="warning hidden">OH GOD YOU TURNED ON ALL THREE LINKS WTF ARE YOU DOING</div>
+    <div id="insanity-on"  class="warning" style="display: none">OH GOD YOU TURNED ON ALL THREE LINKS WTF ARE YOU DOING</div>
 
   </body>
 </html>

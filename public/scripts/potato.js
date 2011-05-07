@@ -2,14 +2,20 @@ var stat_timeout = null;
 var ifaces = new Array();
 var insanity_interval = null;
 var any_down;
+var checked_in = false;
 
 function getData() {
-	$.getJSON('/stat.js', function(data) {
+	$.getJSON('stat.js', function(data) {
 		updateStatus(data['status']);
 
 		any_down = false;
 		$.each(data['ifaces'], updateIF);
 		setInsanity(!any_down);
+
+		$('#log_block .log').addClass('delete');
+		$('#log_block .template').removeClass('delete');
+		$.each(data['log'], updateLog);
+		$('#log_block .delete').remove();
 	});
 }
 
@@ -53,13 +59,18 @@ function createIF(iface) {
 }
 
 function toggleLink(iface) {
+	if (!checked_in) {
+		alert("Click the potato to log in first!\nWhen done, click again to log out.");
+		return;
+	}
+
 	reloadDataIn(1000);
 
 	var mode = ifaces[iface];
 	var new_mode = (mode == 'down') ? 'up' : 'down';
 
 	updateIF(iface, 'busy');
-	$.getJSON('/set/' + iface + '/' + new_mode, function(data) {
+	$.get('admin/set/' + iface + '/' + new_mode, function(data) {
 		if (data != 'SUCCESS') {
 			alert(data);
 		}
@@ -67,9 +78,6 @@ function toggleLink(iface) {
 }
 
 function setInsanity(on) {
-	if (insanity_interval != null) {
-	}
-
 	if (on) {
 		$('#insanity-off').hide();
 		if (insanity_interval == null) {
@@ -84,6 +92,46 @@ function setInsanity(on) {
 	}
 }
 
+function updateLog(index, log) {
+	var id = 'log_' + log['time'].toString().replace('.', '_');
+	var found = $('#' + id);
+	if (found.length >= 1) {
+		found.removeClass('delete');
+		return;
+	}
+
+	var template = $('#log_template');
+	var container = template.clone().removeClass('template').attr('id', id);
+
+	container.find('.l_user').text(log['user']);
+	container.find('.l_iface').text(log['iface'] || '');
+	container.find('.l_action').addClass('action_' + log['action']);
+
+	template.parent().append(container);
+}
+
+function toggleCheckIn() {
+	var url = checked_in ? 'admin/check/out' : 'admin/check/in';
+	$.get(url, function(data) {
+		if (data != 'SUCCESS') {
+			alert(data);
+		} else {
+			checked_in = !checked_in;
+			if (checked_in) {
+				$('#checked-in').show();
+				$('#checked-out').hide();
+			} else {
+				$('#checked-out').show();
+				$('#checked-in').hide();
+			}
+
+			reloadData();
+		}
+	});
+
+}
+
 $(document).ready(function() {
+	$('.checkin').click(function(ev) { toggleCheckIn(); });
 	reloadData();
 });
