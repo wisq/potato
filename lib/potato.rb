@@ -1,3 +1,4 @@
+require 'tdb'
 require 'json'
 require 'active_support/core_ext/hash/indifferent_access'
 
@@ -93,12 +94,16 @@ module Potato
   class PPP
     class Interface
       def initialize(data)
-        params = data.split(';').map { |p| p.split('=', 2) }.flatten(1)
+        params = data.chop.split(';').map { |p| p.split('=', 2) }.flatten(1)
         @data = Hash[*params]
       end
 
       def name
         @data['CALL_FILE']
+      end
+
+      def device
+        @data['IFNAME']
       end
 
       def status
@@ -146,18 +151,19 @@ module Potato
 
     def interfaces
       NICS.map do |nic, dev|
-        if handle = db["DEVICE=#{nic}"]
-          Interface.new(db[handle])
-        else
-          DummyInterface.new(dev)
-        end
+        find_by_nic(nic) || DummyInterface.new(dev)
       end.compact
+    end
+
+    def find_by_nic(nic)
+      return unless handle = db["DEVICE=#{nic}"]
+      Interface.new(db[handle])
     end
 
     private
 
     def db
-      @@db ||= TDB.new('/var/run/pppd2.tdb', :open_flags => IO::RDONLY)
+      @db ||= TDB.new('/var/run/pppd2.tdb', :open_flags => IO::RDONLY)
     end
   end
 end

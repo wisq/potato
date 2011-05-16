@@ -13,11 +13,11 @@ COMMANDS = {
 set :public, File.dirname(__FILE__) + '/../public'
 
 get '/stat.js' do
-  ppp = Potato::PPP.new
+  @ppp ||= Potato::PPP.new
 
   status = {}
   ifaces = {}
-  ppp.interfaces.each do |iface|
+  @ppp.interfaces.each do |iface|
     ifaces[iface.name]   = iface.status
     status[:ip_local ] ||= iface.ip_local
     status[:ip_remote] ||= iface.ip_remote

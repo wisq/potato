@@ -5,6 +5,7 @@ GEM
     json (1.5.1)
     kgio (2.4.0)
     rack (1.2.2)
+    redis (2.2.0)
     sinatra (1.2.6)
       rack (~> 1.1)
       tilt (< 2.0, >= 1.2.2)
@@ -20,6 +21,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   json
+  redis
   sinatra
   tdb
   unicorn
