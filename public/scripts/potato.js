@@ -41,6 +41,19 @@ function updateIF(iface, data) {
 
 	$('#ip_local_'  + iface).text(data['ip_local']);
 	$('#ip_remote_' + iface).text(data['ip_remote']);
+
+	var pings = data['pings'];
+	var ping_elems = $('#' + id + ' .i_pings .ping');
+	for (i = 0; i < pings.length; i++) {
+		var ping  = pings[i];
+		var elem  = $(ping_elems[i]);
+		var trend = 'ping_trend_' + ping['trend'];
+		var icon  = $('#' + trend);
+
+		elem.removeClass().addClass('ping ' + trend);
+		elem.find('.icon').text(icon.text());
+		elem.find('.percent').text(ping['percent']);
+	}
 }
 
 function createIF(iface) {
@@ -85,7 +98,7 @@ function showAddrs(id, iface) {
 	$('#addrs .ip_local' ).attr('id', '#ip_local_'  + iface).text(ip_local);
 	$('#addrs .ip_remote').attr('id', '#ip_remote_' + iface).text(ip_remote);
 
-	$('#addrs').removeClass('hidden');
+	$('#addrs').removeClass('invisible');
 	$('#addrs').stop().fadeTo(200, 1);
 }
 

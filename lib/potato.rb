@@ -93,8 +93,9 @@ module Potato
 
   class PPP
     class Interface
-      def initialize(data)
+      def initialize(nic, data)
         params = data.chop.split(';').map { |p| p.split('=', 2) }.flatten(1)
+        @nic  = nic
         @data = Hash[*params]
       end
 
@@ -122,19 +123,31 @@ module Potato
         @data['IPREMOTE']
       end
 
-      def to_hash
+      def to_hash(redis)
+        ping = Potato::Ping.new(redis, "ping-#{@nic}")
+        pingdata = [15, 60, 300].map do |p|
+          percent = ping.percent(p)
+          {
+            :percent => percent ? sprintf("%.1f%%", (percent * 10).ceil / 10.0) : nil,
+            :trend   => ping.trend(p)
+          }
+        end
+
         {
           :status    => status,
           :ip_local  => ip_local,
-          :ip_remote => ip_remote
+          :ip_remote => ip_remote,
+          :pings     => pingdata
         }
+
       end
     end
 
     class DummyInterface < Interface
       attr_reader :name
 
-      def initialize(name)
+      def initialize(nic, name)
+        @nic  = nic
         @name = name
       end
 
@@ -158,20 +171,65 @@ module Potato
     }
 
     def interfaces
-      NICS.map do |nic, dev|
-        find_by_nic(nic) || DummyInterface.new(dev)
+      NICS.map do |nic, name|
+        find_by_nic(nic) || DummyInterface.new(nic, name)
       end.compact
     end
 
     def find_by_nic(nic)
       return unless handle = db["DEVICE=#{nic}"]
-      Interface.new(db[handle])
+      Interface.new(nic, db[handle])
     end
 
     private
 
     def db
       @db ||= TDB.new('/var/run/pppd2.tdb', :open_flags => IO::RDONLY)
+    end
+  end
+
+  class Ping
+    def initialize(redis, key)
+      @redis = redis
+      @key   = key
+    end
+
+    def loss(offset, length, maxlen = available)
+      return [nil, 0] if offset >= maxlen
+
+      length = [length, maxlen].min
+      new  = @redis.lindex(@key, offset)
+      old  = @redis.lindex(@key, offset + length)
+      loss = new.to_i - old.to_i
+      raise "Negative loss: #{old} -> #{new}" if loss < 0
+
+      [loss, length]
+    end
+
+    def percent(period)
+      loss, period = loss(0, period)
+      return if loss.nil?
+      100.0 * loss / period
+    end
+
+    def trend(period)
+      avail = available
+
+      new, new_len = loss(0,      period, avail)
+      old, old_len = loss(period, period, avail)
+      return :unknown if new.nil? || old.nil? || new_len < period || old_len < period
+
+      if new > old
+        :up
+      elsif new < old
+        :down
+      else
+        :stable
+      end
+    end
+
+    def available
+      @redis.llen(@key)
     end
   end
 end

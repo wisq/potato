@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'redis'
 require 'json'
 require 'active_support/base64'
 
@@ -13,12 +14,13 @@ COMMANDS = {
 set :public, File.dirname(__FILE__) + '/../public'
 
 get '/stat.js' do
-  @ppp ||= Potato::PPP.new
+  $ppp   ||= Potato::PPP.new
+  $redis ||= Redis.new
 
   status = {}
   ifaces = {}
-  @ppp.interfaces.each do |iface|
-    ifaces[iface.name] = iface.to_hash
+  $ppp.interfaces.each do |iface|
+    ifaces[iface.name] = iface.to_hash($redis)
   end
 
   cutoff = Time.now - 600

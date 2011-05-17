@@ -102,6 +102,26 @@ body {
 .iface .i_ipdata {
 	display: none;
 }
-.hidden {
+
+.invisible {
 	visibility: hidden;
 }
+
+.ping {
+	margin: 0px;
+}
+
+.ping .icon {
+	font-size: small;
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	margin-right: 3px;
+}
+
+.ping_trend_unknown .icon {
+	font-size: inherit;
+}
+.ping_trend_up     .icon { color: #c00; }
+.ping_trend_down   .icon { color: #0c0; }
+.ping_trend_stable .icon { color: #00c; }

@@ -120,7 +120,7 @@ class Pinger
     end
 
     @redis.lpush(@redis_key, @lost)
-    @redis.ltrim(@redis_key, 0, KEEP_COUNT - 1)
+    @redis.ltrim(@redis_key, 0, KEEP_COUNT)
 
     output_status
 

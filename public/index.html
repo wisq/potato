@@ -15,11 +15,18 @@
       </div>
     </div>
 
+    <div class="hidden">
+      <span id="ping_trend_up">&#x25b2;</span>
+      <span id="ping_trend_down">&#x25bC;</span>
+      <span id="ping_trend_stable">&#x25b6;</span>
+      <span id="ping_trend_unknown">&#x2639;</span>
+    </div>
+
     <h1>This is not a tomato.</h1>
     <img id="checked-out" class="checkin" src="images/potato.jpg"     alt=""/>
     <img id="checked-in"  class="checkin" src="images/checked_in.gif" alt="" style="display: none"/>
 
-    <div id="addrs" class="hidden">
+    <div id="addrs" class="invisible">
       <span class="ip ip_local">unknown</span>
       <span class="arrow">&#x2194;</span>
       <span class="ip ip_remote">unknown</span>
@@ -33,6 +40,11 @@
 	</span>
 	<div class="i_image">
 	  <span class="i_name">name</span>
+	  <div class="i_pings">
+	    <div class="ping"><span class="icon">&nbsp;</span><span class="percent">&nbsp;</span></div>
+	    <div class="ping"><span class="icon">&nbsp;</span><span class="percent">&nbsp;</span></div>
+	    <div class="ping"><span class="icon">&nbsp;</span><span class="percent">&nbsp;</span></div>
+	  </div>
 	</div>
       </div>
     </div>
