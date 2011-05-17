@@ -107,6 +107,10 @@ body {
 	visibility: hidden;
 }
 
+.hidden {
+	display: none;
+}
+
 .ping {
 	margin: 0px;
 }
