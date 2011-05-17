@@ -27,15 +27,21 @@ function reloadDataIn(timeout) {
 	stat_timeout = setTimeout(reloadData, timeout);
 }
 
-function updateIF(iface, data) {
+function updateIFmode(iface, mode) {
 	var id = createIF(iface);
 
-	var mode = data['status'];
 	if (mode == "down") { any_down = true; }
 
 	ifaces[iface] = mode;
 	$('#' + id + ' .i_mode').text(mode);
 	$('#' + id + ' .i_image').removeClass().addClass('i_image mode_' + mode);
+
+	return id;
+}
+
+function updateIF(iface, data) {
+	var id = updateIFmode(iface, data['status']);
+
 	$('#' + id + ' .i_ipdata .ip_local' ).text(data['ip_local']);
 	$('#' + id + ' .i_ipdata .ip_remote').text(data['ip_remote']);
 
@@ -83,7 +89,7 @@ function toggleLink(iface) {
 	var mode = ifaces[iface];
 	var new_mode = (mode == 'down') ? 'up' : 'down';
 
-	updateIF(iface, 'busy');
+	updateIFmode(iface, 'busy');
 	$.get('admin/set/' + iface + '/' + new_mode, function(data) {
 		if (data != 'SUCCESS') {
 			alert(data);
