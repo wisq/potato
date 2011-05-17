@@ -6,8 +6,6 @@ var checked_in = false;
 
 function getData() {
 	$.getJSON('stat.js', function(data) {
-		updateStatus(data['status']);
-
 		any_down = false;
 		$.each(data['ifaces'], updateIF);
 		setInsanity(!any_down);
@@ -29,19 +27,20 @@ function reloadDataIn(timeout) {
 	stat_timeout = setTimeout(reloadData, timeout);
 }
 
-function updateStatus(stat) {
-	$('#ip-local' ).text(stat['ip_local' ] || 'unknown');
-	$('#ip-remote').text(stat['ip_remote'] || 'unknown');
-}
-
-function updateIF(iface, mode) {
+function updateIF(iface, data) {
 	var id = createIF(iface);
 
+	var mode = data['status'];
 	if (mode == "down") { any_down = true; }
 
 	ifaces[iface] = mode;
 	$('#' + id + ' .i_mode').text(mode);
 	$('#' + id + ' .i_image').removeClass().addClass('i_image mode_' + mode);
+	$('#' + id + ' .i_ipdata .ip_local' ).text(data['ip_local']);
+	$('#' + id + ' .i_ipdata .ip_remote').text(data['ip_remote']);
+
+	$('#ip_local_'  + iface).text(data['ip_local']);
+	$('#ip_remote_' + iface).text(data['ip_remote']);
 }
 
 function createIF(iface) {
@@ -54,6 +53,8 @@ function createIF(iface) {
 		$('#' + id + ' .i_name').text(iface);
 
 		container.click(function(ev) { toggleLink(iface); });
+		container.mouseenter(function(ev) { showAddrs(id, iface); });
+		container.mouseleave(function(ev) { hideAddrs(); });
 	}
 	return id;
 }
@@ -75,6 +76,21 @@ function toggleLink(iface) {
 			alert(data);
 		}
 	});
+}
+
+function showAddrs(id, iface) {
+	var ip_local  = $('#' + id + ' .i_ipdata .ip_local' ).text();
+	var ip_remote = $('#' + id + ' .i_ipdata .ip_remote').text();
+
+	$('#addrs .ip_local' ).attr('id', '#ip_local_'  + iface).text(ip_local);
+	$('#addrs .ip_remote').attr('id', '#ip_remote_' + iface).text(ip_remote);
+
+	$('#addrs').removeClass('hidden');
+	$('#addrs').stop().fadeTo(200, 1);
+}
+
+function hideAddrs() {
+	$('#addrs').stop().fadeTo(1000, 0.3);
 }
 
 function setInsanity(on) {

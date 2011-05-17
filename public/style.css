@@ -98,3 +98,10 @@ body {
 	background-image: url(images/action/out.png);
 	width: 34px;
 }
+
+.iface .i_ipdata {
+	display: none;
+}
+.hidden {
+	visibility: hidden;
+}

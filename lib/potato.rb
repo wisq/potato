@@ -107,7 +107,7 @@ module Potato
       end
 
       def status
-        if @data['BUNDLE']
+        if ip_remote
           :up
         else
           :busy
@@ -121,9 +121,17 @@ module Potato
       def ip_remote
         @data['IPREMOTE']
       end
+
+      def to_hash
+        {
+          :status    => status,
+          :ip_local  => ip_local,
+          :ip_remote => ip_remote
+        }
+      end
     end
 
-    class DummyInterface
+    class DummyInterface < Interface
       attr_reader :name
 
       def initialize(name)

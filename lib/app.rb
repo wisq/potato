@@ -18,9 +18,7 @@ get '/stat.js' do
   status = {}
   ifaces = {}
   @ppp.interfaces.each do |iface|
-    ifaces[iface.name]   = iface.status
-    status[:ip_local ] ||= iface.ip_local
-    status[:ip_remote] ||= iface.ip_remote
+    ifaces[iface.name] = iface.to_hash
   end
 
   cutoff = Time.now - 600
