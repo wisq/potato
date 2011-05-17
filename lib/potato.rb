@@ -165,9 +165,9 @@ module Potato
     end
 
     NICS = {
-      'dsl0' => 'mlppp0',
-      'dsl1' => 'mlppp1',
-      'dsl2' => 'mlppp2'
+      'dsl0' => 'ppp0',
+      'dsl1' => 'ppp1',
+      'dsl2' => 'ppp2'
     }
 
     def interfaces

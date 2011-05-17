@@ -5,7 +5,7 @@ require 'active_support/base64'
 
 require 'lib/potato'
 
-INTERFACE = /^mlppp[0-2]$/
+INTERFACE = /^ppp[0-2]$/
 COMMANDS = {
   'up'   => ['/sbin/ifup'],
   'down' => ['/sbin/ifdown', '--force']
