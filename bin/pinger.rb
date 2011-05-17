@@ -176,4 +176,5 @@ class Pinger
   end
 end
 
+$stdout.sync = true
 Pinger.ping(*ARGV)
