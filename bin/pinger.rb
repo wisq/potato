@@ -30,6 +30,8 @@ class Pinger
       puts "SIGHUP received, restarting ping."
       retry
     end
+  ensure
+    puts "Pinger shutting down."
   end
 
   def initialize(nic)
