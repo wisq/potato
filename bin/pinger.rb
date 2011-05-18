@@ -117,7 +117,6 @@ class Pinger
         end
         last_seq = seq
 
-        puts "ping #{seq} -> #{offset + seq}"
         ping_result(offset + seq, :response)
       end
     end
