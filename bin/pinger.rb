@@ -61,17 +61,17 @@ class Pinger
     target = iface.ip_remote
     device = iface.device
 
-    @last_seq = 0
+    @last_response = @last_timeout = 0
     launch_ping(target, device)
     launch_timeout
 
-    receive_pings
+    update_loop
   ensure
-    @timeout.kill if @timeout
+    @timeout_thread.kill if @timeout_thread
+    @ping_thread.kill if @ping_thread
     Process.kill('TERM', @ping_pid) if @ping_pid
 
-    @timeout  = nil
-    @ping_pid = nil
+    @timeout_thread = @ping_thread = @ping_pid = nil
   end
 
   private
@@ -95,12 +95,31 @@ class Pinger
       target
     ]
 
-    @ping_fh, ping_writer = IO.pipe
+    ping_fh, ping_writer = IO.pipe
     @ping_pid = fork do
       $stdout.reopen(ping_writer)
       $stdin.close
 
       exec('ping', *args.map(&:to_s))
+    end
+
+    @ping_thread = Thread.new do
+      offset = 0
+      last_seq = 0
+
+      ping_fh.each_line do |line|
+        next unless line =~ / icmp_req=(\d+) /
+        seq = $1.to_i
+
+        if seq < last_seq
+          offset += last_seq + 1
+          puts "Ping wraps around: #{last_seq} -> #{seq}"
+        end
+        last_seq = seq
+
+        puts "ping #{seq} -> #{offset + seq}"
+        ping_result(offset + seq, :response)
+      end
     end
   end
 
@@ -108,7 +127,7 @@ class Pinger
     @expected = {1 => Time.now + INTERVAL + TIMEOUT}
 
     Thread.abort_on_exception = true
-    @timeout = Thread.new do
+    @timeout_thread = Thread.new do
       loop do
         now = Time.now
         @expected.dup.each do |seq, time|
@@ -125,35 +144,36 @@ class Pinger
   end
 
   def ping_result(seq, result)
-    timeout = TIMEOUT
+    expect_time = TIMEOUT
+    expect_next = true
 
     case result
     when :timeout
       @lost += 1
-      timeout = 0
+      expect_time = 0
       puts "Ping #{seq} timed out."
+      @last_timeout = seq
     when :response
-      if seq < @last_seq
-        if !@expected.has_key?(seq)
-          puts "Ping #{seq} received too late."
+      if seq < @last_response
+        puts "Ping #{seq} received out of order."
+        expect_next = false
+      elsif !@expected.has_key?(seq)
+        if seq > @last_timeout
+          puts "Ping #{seq} received too early, recalibrating timeouts."
         else
-          puts "Ping #{seq} received out of order."
+          puts "Ping #{seq} received after timeout, recalibrating timeouts."
         end
+        @expected.clear
+        @last_response = seq
+      else
+        @last_response = seq
       end
     else
       raise "Unknown ping result: #{result}"
     end
 
-    @redis.lpush(@redis_key, @lost)
-    @redis.ltrim(@redis_key, 0, KEEP_COUNT)
-
-    output_status
-
     @expected.delete(seq)
-    if seq >= @last_seq
-      @expected[seq + 1] = Time.now + INTERVAL + timeout
-      @last_seq = seq
-    end
+    @expected[seq + 1] = Time.now + INTERVAL + expect_time if expect_next
   end
 
   def output_status
@@ -168,10 +188,11 @@ class Pinger
     @last_status = Time.now.min
   end
 
-  def receive_pings
-    @ping_fh.each_line do |line|
-      next unless line =~ / icmp_req=(\d+) /
-      ping_result($1.to_i, :response)
+  def update_loop
+    loop do
+      sleep(1)
+      @redis.lpush(@redis_key, @lost)
+      @redis.ltrim(@redis_key, 0, KEEP_COUNT)
     end
   end
 end
