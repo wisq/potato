@@ -192,6 +192,7 @@ class Pinger
       sleep(1)
       @redis.lpush(@redis_key, @lost)
       @redis.ltrim(@redis_key, 0, KEEP_COUNT)
+      output_status
     end
   end
 end
