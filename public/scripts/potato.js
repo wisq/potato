@@ -1,14 +1,11 @@
 var stat_timeout = null;
 var ifaces = new Array();
 var insanity_interval = null;
-var any_down;
 var checked_in = false;
 
 function getData() {
 	$.getJSON('stat.js', function(data) {
-		any_down = false;
 		$.each(data['ifaces'], updateIF);
-		setInsanity(!any_down);
 
 		$('#log_block .log').addClass('delete');
 		$('#log_block .template').removeClass('delete');
@@ -29,8 +26,6 @@ function reloadDataIn(timeout) {
 
 function updateIFmode(iface, mode) {
 	var id = createIF(iface);
-
-	if (mode == "down") { any_down = true; }
 
 	ifaces[iface] = mode;
 	$('#' + id + ' .i_mode').text(mode);
@@ -110,21 +105,6 @@ function showAddrs(id, iface) {
 
 function hideAddrs() {
 	$('#addrs').stop().fadeTo(1000, 0.3);
-}
-
-function setInsanity(on) {
-	if (on) {
-		$('#insanity-off').hide();
-		if (insanity_interval == null) {
-			var insanity = $('#insanity-on');
-			insanity_interval = setInterval(function() { insanity.toggle(); }, 250);
-		}
-	} else {
-		clearInterval(insanity_interval);
-		insanity_interval = null;
-		$('#insanity-off').show();
-		$('#insanity-on').hide();
-	}
 }
 
 function updateLog(index, log) {
