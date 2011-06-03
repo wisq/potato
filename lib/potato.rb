@@ -1,6 +1,7 @@
 require 'tdb'
 require 'json'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'yaml'
 
 module Potato
   class Log
@@ -115,6 +116,12 @@ module Potato
         end
       end
 
+      def routing?
+        YAML.load_file('/var/local/run/round_robin.yml').include?(name)
+      rescue Errno::ENOENT
+        true # assume all ifaces routed
+      end
+
       def ip_local
         @data['IPLOCAL']
       end
@@ -135,6 +142,7 @@ module Potato
 
         {
           :status    => status,
+          :routing   => routing?,
           :ip_local  => ip_local,
           :ip_remote => ip_remote,
           :pings     => pingdata

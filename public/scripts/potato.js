@@ -37,6 +37,7 @@ function updateIFmode(iface, mode) {
 function updateIF(iface, data) {
 	var id = updateIFmode(iface, data['status']);
 
+	$('#' + id).removeClass().addClass('iface ' + (data['routing'] ? 'routed' : 'unrouted'));
 	$('#' + id + ' .i_ipdata .ip_local' ).text(data['ip_local']);
 	$('#' + id + ' .i_ipdata .ip_remote').text(data['ip_remote']);
 
