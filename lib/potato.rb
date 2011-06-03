@@ -214,6 +214,7 @@ module Potato
       loss = new.to_i - old.to_i
       raise "Negative loss: #{old} -> #{new}" if loss < 0
 
+      loss = length if loss > length
       [loss, length]
     end
 
