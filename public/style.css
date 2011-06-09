@@ -130,10 +130,6 @@ body {
 .ping_trend_down   .icon { color: #0c0; }
 .ping_trend_stable .icon { color: #00c; }
 
-.routing_unknown {
-	opacity: 0.5;
-}
-
-.routing_isolated {
-	border: 2px solid #00a;
-}
+.routing_unknown  { opacity: 0.5; }
+.routing_reserved { border: 2px solid #a00; }
+.routing_isolated { border: 2px solid #00a; }

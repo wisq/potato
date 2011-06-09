@@ -128,6 +128,7 @@ module Potato
         return :unknown unless PPP.round_robin
         return :isolated if PPP.round_robin[:isolate] == name
         return :balanced if PPP.round_robin[:balance].include?(name)
+        return :reserved if PPP.round_robin[:reserve].include?(name)
         return :unknown
       end
 
