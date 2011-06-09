@@ -94,7 +94,7 @@ module Potato
 
   class PPP
     def self.load_round_robin
-      @@round_robin = YAML.load_file('/var/local/run/round_robin.yml')
+      @@round_robin = YAML.load_file('/var/local/run/round_robin/status.yml')
     end
 
     def self.round_robin
