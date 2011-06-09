@@ -14,6 +14,8 @@ COMMANDS = {
 set :public, File.dirname(__FILE__) + '/../public'
 
 get '/stat.js' do
+  Potato::PPP.load_round_robin
+
   $ppp   ||= Potato::PPP.new
   $redis ||= Redis.new
 

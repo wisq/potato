@@ -93,6 +93,14 @@ module Potato
   end
 
   class PPP
+    def self.load_round_robin
+      @@round_robin = YAML.load_file('/var/local/run/round_robin.yml')
+    end
+
+    def self.round_robin
+      @@round_robin
+    end
+
     class Interface
       def initialize(nic, data)
         params = data.chop.split(';').map { |p| p.split('=', 2) }.flatten(1)
@@ -116,10 +124,15 @@ module Potato
         end
       end
 
-      def routing?
-        YAML.load_file('/var/local/run/round_robin.yml').include?(name)
-      rescue Errno::ENOENT
-        true # assume all ifaces routed
+      def routing_status
+        return :unknown unless PPP.round_robin
+        return :isolated if PPP.round_robin[:isolate] == name
+        return :balanced if PPP.round_robin[:balance].include?(name)
+        return :unknown
+      end
+
+      def isolated?
+        return true unless PPP.round_robin # assume no ifaces isolated
       end
 
       def ip_local
@@ -142,7 +155,7 @@ module Potato
 
         {
           :status    => status,
-          :routing   => routing?,
+          :routing   => routing_status,
           :ip_local  => ip_local,
           :ip_remote => ip_remote,
           :pings     => pingdata
