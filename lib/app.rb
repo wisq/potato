@@ -7,8 +7,8 @@ require 'lib/potato'
 
 INTERFACE = /^ppp\d$/
 COMMANDS = {
-  'up'   => ['/sbin/ifup'],
-  'down' => ['/sbin/ifdown', '--force']
+  'up'   => [['/sbin/ifdown', '--force'], ['/sbin/ifup']],
+  'down' => [['/sbin/ifdown', '--force']]
 }
 
 set :public, File.dirname(__FILE__) + '/../public'
@@ -55,14 +55,18 @@ get '/admin/set/:iface/:mode' do
   return "Invalid interface: #{iface}" unless iface =~ INTERFACE
 
   mode = params[:mode]
-  return "Invalid mode: #{mode}" unless command = COMMANDS[mode]
+  return "Invalid mode: #{mode}" unless commands = COMMANDS[mode]
 
   Potato::Log.open do |log|
     log << {:user => user, :action => mode, :iface => iface}
   end
 
   fork do
-    exec('/usr/bin/sudo', *(command + [iface]))
+    last_cmd = commands.pop
+    commands.each do |cmd|
+      system('/usr/bin/sudo', *(cmd + [iface]))
+    end
+    exec('/usr/bin/sudo', *(last_cmd + [iface]))
     raise 'exec failed'
   end
 
