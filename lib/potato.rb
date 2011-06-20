@@ -117,11 +117,15 @@ module Potato
       end
 
       def status
-        if ip_remote
+        if ip_remote && iface_exists?
           :up
         else
           :busy
         end
+      end
+
+      def iface_exists?
+        File.exist?("/proc/sys/net/ipv4/conf/#{name}")
       end
 
       def routing_status
