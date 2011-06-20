@@ -20,6 +20,8 @@ body {
 
 .i_image {
 	width: 100px;
+	height: 4.6em;
+	line-height: 1.15em;
 	background-position: center bottom;
 }
 
