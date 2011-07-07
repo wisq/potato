@@ -43,19 +43,20 @@ class LinkWatch
       end
     end
 
-    def log_down_message
-      status =
-        if @last_seen.nil?
-          "is #{down_verb}"
-        else
-          "has been #{down_verb} for #{(Time.now - @last_seen).to_i} seconds"
-        end
-
-      "Interface #{name} #{status}."
+    def down_status
+      if @last_seen.nil?
+        "is #{down_verb}"
+      else
+        "has been #{down_verb} for #{(Time.now - @last_seen).to_i} seconds"
+      end
     end
 
     def log_up_message
       notify_up_message
+    end
+
+    def log_down_message
+      notify_down_message
     end
 
     def notify_message
@@ -88,6 +89,10 @@ class LinkWatch
         "missing"
       end
 
+      def log_down_message
+        "Interface #{name} #{down_status}."
+      end
+
       def notify_up_message
         "Interface #{name} is back."
       end
@@ -98,7 +103,7 @@ class LinkWatch
     end
 
     class PPP < Interface
-      PPP_TOLERANCE = 5 # minutes
+      PPP_TOLERANCE = 120 # seconds
 
       def down_verb
         "down"
@@ -109,7 +114,7 @@ class LinkWatch
 
       def notify_down?
         return true if @last_seen.nil? # first run, will be ignored
-        Time.now >= (@last_seen + PPP_TOLERANCE*60)
+        Time.now >= (@last_seen + PPP_TOLERANCE)
       end
 
       def notify_up_message
@@ -117,7 +122,7 @@ class LinkWatch
       end
 
       def notify_down_message
-        "PPP link #{name} has been down for #{PPP_TOLERANCE} minutes."
+        "PPP link #{name} #{down_status}."
       end
     end
   end
