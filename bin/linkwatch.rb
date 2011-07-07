@@ -105,12 +105,11 @@ class LinkWatch
       end
 
       def notify_delay
-        return 0 if @last_seen.nil?
-        Time.now - @last_seen + PPP_TOLERANCE*60
       end
 
       def notify_down?
-        !@up && notify_delay <= 0.0
+        return true if @last_seen.nil? # first run, will be ignored
+        Time.now >= (@last_seen + PPP_TOLERANCE*60)
       end
 
       def notify_up_message
