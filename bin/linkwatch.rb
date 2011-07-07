@@ -7,6 +7,34 @@ require 'set'
 $stdout.sync = true # logging
 
 class LinkWatch
+  class Hours
+    def initialize(spec)
+      @start, @stop = spec.split('-').map {|t| parse_daytime(t) }
+    end
+
+    def include?(raw_time)
+      time = time_to_daytime(raw_time)
+
+      if @stop < @start # spans midnight
+        time >= @start || time <= @stop
+      else
+        time >= @start && time <= @stop
+      end
+    end
+
+    private
+
+    def parse_daytime(spec)
+      hours, minutes, seconds = spec.split(':', 3).map(&:to_i) + [0, 0, 0]
+      hours*3600 + minutes*60 + seconds
+    end
+
+    def time_to_daytime(time)
+      midnight = Time.local(time.year, time.month, time.day)
+      time.to_i - midnight.to_i
+    end
+  end
+
   class Interface
     def self.for(name)
       if name =~ /^ppp\d+$/
@@ -132,6 +160,7 @@ class LinkWatch
       config    = YAML.load_file(config_file)
       @jabber   = DRbObject.new(nil, config[:druby_uri])
       @watchers = config[:watchers]
+      @hours    = config[:hours].map {|h| Hours.new(h)}
 
       @interfaces = Hash.new
       config[:interfaces].each do |name|
@@ -156,6 +185,12 @@ class LinkWatch
       puts "Linkwatch shutting down."
     end
 
+    private
+
+    def notify_hours?
+      @hours.any? {|h| h.include? Time.now }
+    end
+
     def run_loop
       cutoff = Time.now
 
@@ -175,7 +210,7 @@ class LinkWatch
           puts log_message
         end
 
-        if notify_message = iface.notify_message
+        if notify_hours? && notify_message = iface.notify_message
           puts "Sending notification: #{notify_message}"
           @watchers.each do |addr|
             @jabber.deliver(addr, notify_message)
