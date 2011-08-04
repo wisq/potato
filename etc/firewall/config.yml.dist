@@ -1,0 +1,8 @@
+# Uncomment and add interfaces and IP addresses below.
+
+#reserved:
+#  ppp4:
+#    - 192.168.12.34
+#  ppp5:
+#    - 192.168.12.56
+#    - 192.168.12.78

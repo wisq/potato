@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Called from udev for USB NICs on connect.
+
+DSL="$INTERFACE"
+PPP="`echo "$DSL" | sed "s/^dsl/ppp/"`"
+
+(
+	ifdown --force "$PPP"
+	ifup "$PPP"
+)&

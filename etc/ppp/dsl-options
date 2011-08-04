@@ -1,0 +1,22 @@
+# /etc/ppp/options
+# 
+# Partly taken from http://www.dslreports.com/forum/r23670161-Debian-MLPPP
+#
+
+debug
+plugin rp-pppoe.so
+
+noipdefault
+
+hide-password
+lcp-echo-interval 20
+lcp-echo-failure 3
+noauth
+persist
+maxfail 0
+holdoff 10
+mtu 1442
+mru 1482
+
+noaccomp
+default-asyncmap 

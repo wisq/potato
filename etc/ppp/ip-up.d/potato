@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if grep "$PPP_IFACE"$ /etc/iproute2/rt_tables; then
+	# Add routing table entries.
+	ip route flush table "$PPP_IFACE"
+	ip route replace table "$PPP_IFACE" default dev "$PPP_IFACE"
+
+	# Restart ping script (new ping address).
+	sv hup potato-"$PPP_IPPARAM"
+
+	# Test interface.
+	/etc/ppp/potato-tester "$PPP_IFACE" "$PPP_REMOTE" | logger -t "potato-tester[$PPP_IFACE]" &
+fi

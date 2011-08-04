@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ps ax | grep "[/]etc/ppp/potato-tester $PPP_IFACE" | cut -c1-5 | xargs -r kill
+
+/etc/firewall/round-robin.rb

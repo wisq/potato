@@ -1,0 +1,5 @@
+file /etc/ppp/dsl-options
+user "user0@domain.com"
+nic-dsl0
+ipparam dsl0
+unit 0

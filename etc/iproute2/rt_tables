@@ -1,0 +1,17 @@
+#
+# reserved values
+#
+255	local
+254	main
+253	default
+0	unspec
+#
+# local
+#
+99	null
+100	ppp0
+101	ppp1
+102	ppp2
+103	ppp3
+104	ppp4
+105	ppp5

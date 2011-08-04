@@ -1,0 +1,24 @@
+#!/bin/sh
+
+PPP_IFACE="$1"
+PPP_REMOTE="$2"
+
+# Pick an IP that you don't expect to go down or refuse pings.
+# I like to use a host we control.
+TARGET="1.2.3.4"
+
+echo "Pinging gateway ..."
+if ping -n -c 5 -w 120 "$PPP_REMOTE" > /dev/null 2>&1; then
+	echo "Pinging internet ..."
+
+	if ping -I "$PPP_IFACE" -n -i 3 -c 5 -w 300 "$TARGET" > /dev/null 2>&1; then
+		echo "Tests passed, interface is good."
+		/etc/firewall/round-robin.rb
+	else
+		echo "Connection is lame, restarting."
+		poff -r "$PPP_IFACE"
+	fi
+else
+	echo "Connection not responding, restarting."
+	poff -r "$PPP_IFACE"
+fi

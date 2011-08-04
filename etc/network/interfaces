@@ -1,0 +1,54 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# Loopback:
+auto lo
+iface lo inet loopback
+up /etc/firewall/load.sh
+
+# DSL modems:
+iface dsl0 inet manual
+iface dsl1 inet manual
+iface dsl2 inet manual
+iface dsl3 inet manual
+iface dsl4 inet manual
+iface dsl5 inet manual
+
+# Dummy interface:
+auto dummy0
+iface dummy0 inet manual
+up /sbin/ifconfig dummy0 up
+up /bin/ip route flush table null
+up /bin/ip route replace table null dev dummy0
+
+# PPP:
+auto ppp0
+auto ppp1
+auto ppp2
+auto ppp3
+auto ppp4
+auto ppp5
+
+iface ppp0 inet ppp
+pre-up /sbin/ifconfig dsl0 up
+provider ppp0
+
+iface ppp1 inet ppp
+pre-up /sbin/ifconfig dsl1 up
+provider ppp1
+
+iface ppp2 inet ppp
+pre-up /sbin/ifconfig dsl2 up
+provider ppp2
+
+iface ppp3 inet ppp
+pre-up /sbin/ifconfig dsl3 up
+provider ppp3
+
+iface ppp4 inet ppp
+pre-up /sbin/ifconfig dsl4 up
+provider ppp4
+
+iface ppp5 inet ppp
+pre-up /sbin/ifconfig dsl5 up
+provider ppp5

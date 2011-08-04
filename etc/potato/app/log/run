@@ -1,0 +1,2 @@
+#!/bin/sh
+exec setuidgid multilog multilog t s999999 /var/log/potato/app

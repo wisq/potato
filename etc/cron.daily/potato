@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+(
+	echo "Resetting round-robin config."
+	cp -f /etc/firewall/config.yml.dist /var/local/run/round_robin/config.yml
+	exec /etc/firewall/round-robin.rb
+) | logger -t round-robin.rb

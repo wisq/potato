@@ -1,0 +1,71 @@
+table mangle {
+        chain PREROUTING {
+                policy ACCEPT;
+                jump mangle-routing;
+        }
+
+	chain mangle-routing {
+		# Leave internal traffic alone.
+		saddr 192.168.0.0/16 daddr 192.168.0.0/16 RETURN;
+
+		proto (tcp udp icmp) {
+			jump balance-or-isolate;
+		}
+	}
+
+	chain balance-or-isolate {
+		saddr 192.168.0.0/16 daddr ! 192.168.0.0/16 {
+			# Stops after the first match:
+			mod connmark mark 0 {
+				jump rr-reserve;
+				jump isolate;
+				jump rr-balance;
+			}
+
+			CONNMARK restore-mark;
+		}
+
+		saddr ! 192.168.0.0/16 proto (tcp udp icmp) {
+			# Add one line per interface:
+			interface ppp0 CONNMARK set-mark 0x100;
+			interface ppp1 CONNMARK set-mark 0x101;
+			interface ppp2 CONNMARK set-mark 0x102;
+			interface ppp3 CONNMARK set-mark 0x103;
+			interface ppp4 CONNMARK set-mark 0x104;
+			interface ppp5 CONNMARK set-mark 0x105;
+		}
+	}
+
+	chain isolate proto tcp {
+		# Interactive SSH traffic:
+		dport 22 {
+			# Don't isolate bulk SSH:
+			daddr 207.97.227.239 RETURN; # GitHub
+
+			jump rr-isolate;
+		}
+
+		# Jabber traffic:
+		dport (5222 5223) jump rr-isolate;
+
+		# Services allergic to IP changes:
+		daddr 1.2.3.4   dport 1234   jump rr-isolate;	# example
+	}
+
+	# These are filled in by the round-robin script:
+	chain rr-reserve { RETURN; }
+	chain rr-isolate { RETURN; }
+	chain rr-balance { CONNMARK set-mark 0x100; }
+}
+
+table nat {
+	chain POSTROUTING {
+		policy ACCEPT;
+		jump nat-source;
+	}
+
+	chain nat-source {
+		# Basic Internet masquerading:
+		saddr 192.168.0.0/16 outerface "ppp+" MASQUERADE;
+	}
+}
